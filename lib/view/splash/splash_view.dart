@@ -32,7 +32,7 @@ class _SplashViewState extends State<SplashView> {
           children: [
             const Text(
               "어디있지?",
-              style: TextStyle(fontSize: 26, color: Colors.white),
+              style: TextStyle(fontSize: 28, color: Colors.white),
             ),
           ],
         ),
