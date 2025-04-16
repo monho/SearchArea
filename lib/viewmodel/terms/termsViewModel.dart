@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../view/home/home_view.dart';
 
-class Termsviewmodel extends ChangeNotifier {
+class TermsViewModel extends ChangeNotifier {
   bool _allAgreed = false;
   bool _gpsTerms = false;
   String? _errorMessage;
@@ -38,6 +39,10 @@ class Termsviewmodel extends ChangeNotifier {
     if (status.isGranted) {
       _errorMessage = null;
       // 권한이 허용된 경우 다음 화면으로 이동하거나 로직 추가
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('위치 권한이 허용되었습니다.')));
