@@ -25,4 +25,28 @@ class Termsviewmodel extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
   }
+
+  // 위치 권한 요청
+  Future<void> requestLocationPermission(BuildContext context) async {
+    if (!_gpsTerms) {
+      _errorMessage = '위치 기반 서비스 약관에 동의해야 합니다.';
+      notifyListeners();
+      return;
+    }
+
+    final status = await Permission.locationWhenInUse.request();
+    if (status.isGranted) {
+      _errorMessage = null;
+      // 권한이 허용된 경우 다음 화면으로 이동하거나 로직 추가
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('위치 권한이 허용되었습니다.')));
+    } else if (status.isDenied) {
+      _errorMessage = '위치 권한이 거부되었습니다. 설정에서 권한을 허용해주세요.';
+    } else if (status.isPermanentlyDenied) {
+      _errorMessage = '위치 권한이 영구적으로 거부되었습니다. 설정에서 권한을 허용해주세요.';
+      await openAppSettings(); // 설정 화면으로 이동
+    }
+    notifyListeners();
+  }
 }
