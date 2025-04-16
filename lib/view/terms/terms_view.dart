@@ -1,120 +1,133 @@
 import 'package:flutter/material.dart';
 import 'package:searcharea/core/component_widget.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodel/terms/termsViewModel.dart';
 
-class TermsView extends StatefulWidget {
+
+class TermsView extends StatelessWidget {
   const TermsView({super.key});
 
   @override
-  State<TermsView> createState() => _TermsViewState();
-}
-
-class _TermsViewState extends State<TermsView> {
-  bool _Allagreed = false;
-  bool _gpsTerms = false;
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return ChangeNotifierProvider(
+      create: (_) => TermsViewModel(),
+      child: Scaffold(
         backgroundColor: Colors.white,
-        title: const Text("약관동의"),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // 왼쪽 정렬
-          children: [
-            const TermsHeaderText(text: '고객님의', textAlign: TextAlign.left),
-            const TermsHeaderText(text: '동의가 필요해요', textAlign: TextAlign.left),
-            const SizedBox(height: 32),
-            Container(
-              padding: const EdgeInsets.fromLTRB(12, 3, 12, 3),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: const Color.fromRGBO(232, 238, 242, 1),
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: CheckboxListTile(
-                title: const TermsHeaderText(
-                  text: '약관 모두 동의하기',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromRGBO(23, 25, 26, 1),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          title: const Text("약관동의"),
+          centerTitle: true,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Consumer<TermsViewModel>(
+            builder: (context, viewModel, child) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const TermsHeaderText(text: '고객님의', textAlign: TextAlign.left),
+                  const TermsHeaderText(text: '동의가 필요해요', textAlign: TextAlign.left),
+                  const SizedBox(height: 32),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(12, 3, 12, 3),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: const Color.fromRGBO(232, 238, 242, 1),
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: CheckboxListTile(
+                      title: const TermsHeaderText(
+                        text: '약관 모두 동의하기',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromRGBO(23, 25, 26, 1),
+                        ),
+                      ),
+                      value: viewModel.allAgreed,
+                      onChanged: viewModel.toggleAllAgreed,
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      activeColor: const Color.fromRGBO(0, 79, 255, 1),
+                      checkColor: Colors.white,
+                    ),
                   ),
-                ),
-                value: _Allagreed,
-                onChanged: (value) {
-                  setState(() {
-                    _Allagreed = value ?? false;
-                    _gpsTerms = _Allagreed;
-                  });
-                },
-                contentPadding: EdgeInsets.zero,
-                controlAffinity: ListTileControlAffinity.leading,
-                activeColor: Color.fromRGBO(0, 79, 255, 1), // 버튼 배경색,
-                checkColor: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
-              child: CheckboxListTile(
-                title: const TermsHeaderText(
-                  text: '필수 위치기반 서비스 이용약관',
-                  style: TextStyle(fontSize: 16, color: Colors.black),
-                ),
-                value: _gpsTerms,
-                onChanged: (value) {
-                  setState(() {
-                    _gpsTerms = value ?? false;
-                    _Allagreed = _gpsTerms;
-                  });
-                },
-                contentPadding: EdgeInsets.zero,
-                controlAffinity: ListTileControlAffinity.leading,
-                activeColor: Color.fromRGBO(0, 79, 255, 1), // 버튼 배경색,
-                checkColor: Colors.white,
-              ),
-            ),
-            const Spacer(), 
-            SizedBox(
-              height: 52,
-              child: ElevatedButton(
-                onPressed:
-                    _gpsTerms
-                        ? () {
-                         
-                        }
-                        : null,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50), // 버튼을 가로로 꽉 채움
-                  backgroundColor: Color.fromRGBO(0, 79, 255, 1), // 버튼 배경색
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
+                    child: CheckboxListTile(
+                      title: const TermsHeaderText(
+                        text: '필수 위치기반 서비스 이용약관',
+                        style: TextStyle(fontSize: 16, color: Colors.black),
+                      ),
+                      value: viewModel.gpsTerms,
+                      onChanged: viewModel.toggleGpsTerms,
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      activeColor: const Color.fromRGBO(0, 79, 255, 1),
+                      checkColor: Colors.white,
+                    ),
                   ),
-                ),
-                child: const TermsHeaderText(
-                  text: '동의',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                  if (viewModel.errorMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      viewModel.errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 14),
+                    ),
+                  ],
+                  const Spacer(),
+                  SizedBox(
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: viewModel.gpsTerms
+                          ? () => viewModel.requestLocationPermission(context)
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                        backgroundColor: const Color.fromRGBO(0, 79, 255, 1),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const TermsHeaderText(
+                        text: '동의',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
-          ],
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
   }
 }
 
+class TermsHeaderText extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final TextAlign? textAlign;
 
-void main() {
-  runApp(const MaterialApp(home: TermsView()));
+  const TermsHeaderText({
+    super.key,
+    required this.text,
+    this.style,
+    this.textAlign,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: style ?? const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      textAlign: textAlign,
+    );
+  }
 }
