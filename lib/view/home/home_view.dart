@@ -8,17 +8,24 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create : (_) => HomeViewModel(),
+      create: (_) => HomeViewModel(),
       child: Consumer<HomeViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
-            body : SafeArea(
-              child: Column(
-                children: [
-                  const SearchBar(),
-                ],
+            body: Padding(
+              padding: const EdgeInsets.all(16),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    const CustomSearchBar(),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    const CustomSortDropdown(),
+                  ],
+                ),
               ),
-            )
+            ),
           );
         },
       ),
@@ -27,32 +34,71 @@ class HomeScreen extends StatelessWidget {
 }
 
 //커스텀 검색바
-class SearchBar extends StatelessWidget{
-  const SearchBar({super.key});
+class CustomSearchBar extends StatelessWidget {
+  const CustomSearchBar({super.key});
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     final viewModel = Provider.of<HomeViewModel>(context, listen: false);
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: '찾으시려는 장소를 입력해주세요.',
-          prefixIcon: const Icon(Icons.search),
-          border : OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none,
-          ),
-          filled: true,
-          fillColor: Color.fromRGBO(242, 248, 252, 1)
+    return TextField(
+      decoration: InputDecoration(
+        hintText: '찾으시려는 장소를 입력해주세요.',
+        prefixIcon: const Icon(Icons.search),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide.none,
         ),
-        onChanged: viewModel.updateSearchQuery,
-        controller : TextEditingController(text: viewModel.searchQuery)
-          ..selection = TextSelection.fromPosition(
-            TextPosition(offset: viewModel.searchQuery.length),
-          ),
+        filled: true,
+        fillColor: Color.fromRGBO(242, 248, 252, 1),
       ),
+      onChanged: viewModel.updateSearchQuery,
+      controller: TextEditingController(text: viewModel.searchQuery)
+        ..selection = TextSelection.fromPosition(
+          TextPosition(offset: viewModel.searchQuery.length),
+        ),
+    );
+  }
+}
+
+class CustomSortDropdown extends StatelessWidget {
+  const CustomSortDropdown({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<HomeViewModel>(
+      builder: (context, viewModel, child) {
+        return Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12.0,
+                vertical: 3.0,
+              ),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: const Color(0xFFE8EEF2), // #E8EEF2 색상
+                  width: 1.0,
+                ),
+                borderRadius: BorderRadius.circular(20.0), // 둥글기 적용
+              ),
+              child: DropdownButton<String>(
+                value: viewModel.sortOption,
+                items:
+                    ['가까운 순', '리뷰 많은 순'].map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                onChanged: viewModel.updateSortOption,
+                underline: const SizedBox(), // 기본 밑줄 제거
+                icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
