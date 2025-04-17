@@ -1,9 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:searcharea/viewmodel/terms/home/homeViewModel.dart';
+import 'package:searcharea/view/home/widget/placeListView.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<Map<String, dynamic>> places = [
+    {
+      'name': '모모야마',
+      'distance': 0.7,
+      'reviewCount': 29,
+      'category': '식당',
+      'tags': ['1회 주문', '포장 가능'],
+      'isFavorite': false,
+    },
+    {
+      'name': '즐겨운 순삭',
+      'distance': 0.7,
+      'reviewCount': 29,
+      'category': '식당',
+      'tags': ['1회 주문', '포장 가능'],
+      'isFavorite': false,
+    },
+    {
+      'name': '즐겨운 순삭',
+      'distance': 0.7,
+      'reviewCount': 29,
+      'category': '식당',
+      'tags': ['1회 주문', '포장 가능'],
+      'isFavorite': false,
+    },
+    {
+      'name': '즐겨운 순삭',
+      'distance': 0.7,
+      'reviewCount': 29,
+      'category': '식당',
+      'tags': ['1회 주문', '포장 가능'],
+      'isFavorite': false,
+    },
+    {
+      'name': '즐겨운 순삭',
+      'distance': 0.7,
+      'reviewCount': 29,
+      'category': '식당',
+      'tags': ['1회 주문', '포장 가능'],
+      'isFavorite': false,
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -12,16 +61,32 @@ class HomeScreen extends StatelessWidget {
       child: Consumer<HomeViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
+            backgroundColor: Colors.white,
             body: Padding(
               padding: const EdgeInsets.all(16),
               child: SafeArea(
                 child: Column(
                   children: [
                     const CustomSearchBar(),
-                    SizedBox(
-                      height: 15,
-                    ),
+                    SizedBox(height: 15),
                     const CustomSortDropdown(),
+                    SizedBox(height: 15),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: places.length,
+                        itemBuilder: (context, index) {
+                          return CustomPlaceItem(
+                            place: places[index],
+                            onFavoriteToggle: () {
+                              setState(() {
+                                places[index]['isFavorite'] =
+                                    !places[index]['isFavorite'];
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -85,7 +150,7 @@ class CustomSortDropdown extends StatelessWidget {
               child: DropdownButton<String>(
                 value: viewModel.sortOption,
                 items:
-                    ['가까운 순', '리뷰 많은 순'].map((String value) {
+                    ['가까운 순'].map((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
                         child: Text(value),
