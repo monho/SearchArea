@@ -14,10 +14,10 @@ class CustomPlaceItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0), // 아이템 간 간격 추가
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: const Color.fromARGB(255, 255, 255, 255), // 배경색 #F5F7F9
+        color: const Color(0xFFF5F7F9),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -51,8 +51,8 @@ class CustomPlaceItem extends StatelessWidget {
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
-                          overflow: TextOverflow.ellipsis, // 길어질 경우 "..." 표시
-                          maxLines: 1, // 한 줄로 제한
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                       IconButton(
@@ -64,9 +64,9 @@ class CustomPlaceItem extends StatelessWidget {
                       ),
                     ],
                   ),
-                  // 거리와 리뷰 수 (더미 데이터)
+                  // 거리와 리뷰 수
                   Text(
-                    '0.7km 29분',
+                    '${place.distance.toStringAsFixed(1)}km 29분', // 실제 거리 표시
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 14,

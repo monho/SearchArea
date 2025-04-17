@@ -112,8 +112,8 @@ class CustomSortDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<HomeViewModel>(
-      builder: (context, viewModel, child) {
+    return Consumer2<HomeViewModel, PlaceViewModel>(
+      builder: (context, homeViewModel, placeViewModel, child) {
         return Row(
           children: [
             Container(
@@ -129,14 +129,16 @@ class CustomSortDropdown extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20.0),
               ),
               child: DropdownButton<String>(
-                value: viewModel.sortOption,
+                value: homeViewModel.sortOption,
                 items: ['가까운 순'].map((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(value),
                   );
                 }).toList(),
-                onChanged: viewModel.updateSortOption,
+                onChanged: (value) {
+                  homeViewModel.updateSortOption(value, placeViewModel);
+                },
                 underline: const SizedBox(),
                 icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
               ),
