@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:searcharea/core/api_service.dart';
 import 'package:searcharea/model/place/place_model.dart';
 
@@ -19,6 +20,7 @@ class PlaceViewModel with ChangeNotifier {
 
     try {
       _places = await _naverApiService.fetchPlaces(query);
+      print(_places);
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
