@@ -24,6 +24,10 @@ Android:
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
 
+## 피그마 시안 
+ https://www.figma.com/proto/h22bdfzeJS72DjYKMrXBP6/Untitled?node-id=0-1&t=zzsAsQdHJiRIjJRD-1
+
+
 
 5. 앱 실행
 Flutter 앱을 실행합니다.
