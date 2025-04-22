@@ -7,8 +7,10 @@ class Place {
   final String roadAddress;
   final int mapx;
   final int mapy;
+  final String link;
   final List<String> tags;
   bool isFavorite;
+  double distance;
 
   Place({
     required this.title,
@@ -17,8 +19,10 @@ class Place {
     required this.roadAddress,
     required this.mapx,
     required this.mapy,
+    required this.link,
     required this.tags,
     this.isFavorite = false,
+    this.distance = 0.0,
   });
 
   factory Place.fromJson(Map<String, dynamic> json) {
@@ -28,8 +32,9 @@ class Place {
       category: json['category'] ?? '',
       address: json['address'] ?? '',
       roadAddress: json['roadAddress'] ?? '',
-      mapx: json['mapx'] ?? 0,
-      mapy: json['mapy'] ?? 0,
+      mapx: int.tryParse(json['mapx']?.toString() ?? '0') ?? 0,
+      mapy: int.tryParse(json['mapy']?.toString() ?? '0') ?? 0,
+      link: json['link'] ?? 'https://naver.com',
       tags: dummyTags,
       isFavorite: false,
     );

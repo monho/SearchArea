@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:searcharea/viewmodel/terms/home/homeViewModel.dart';
+import 'package:searcharea/core/debouncer.dart';
 import 'package:searcharea/view/home/widget/placeListView.dart';
+import 'package:searcharea/viewmodel/place/placeViewModel.dart';
+import 'package:searcharea/viewmodel/terms/home/homeViewModel.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,55 +13,28 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Map<String, dynamic>> places = [
-    {
-      'name': '모모야마',
-      'distance': 0.7,
-      'reviewCount': 29,
-      'category': '식당',
-      'tags': ['1회 주문', '포장 가능'],
-      'isFavorite': false,
-    },
-    {
-      'name': '즐겨운 순삭',
-      'distance': 0.7,
-      'reviewCount': 29,
-      'category': '식당',
-      'tags': ['1회 주문', '포장 가능'],
-      'isFavorite': false,
-    },
-    {
-      'name': '즐겨운 순삭',
-      'distance': 0.7,
-      'reviewCount': 29,
-      'category': '식당',
-      'tags': ['1회 주문', '포장 가능'],
-      'isFavorite': false,
-    },
-    {
-      'name': '즐겨운 순삭',
-      'distance': 0.7,
-      'reviewCount': 29,
-      'category': '식당',
-      'tags': ['1회 주문', '포장 가능'],
-      'isFavorite': false,
-    },
-    {
-      'name': '즐겨운 순삭',
-      'distance': 0.7,
-      'reviewCount': 29,
-      'category': '식당',
-      'tags': ['1회 주문', '포장 가능'],
-      'isFavorite': false,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // 초기 검색
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final homeViewModel = Provider.of<HomeViewModel>(context, listen: false);
+      Provider.of<PlaceViewModel>(
+        context,
+        listen: false,
+      ).fetchPlaces(homeViewModel.searchQuery);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => HomeViewModel(),
-      child: Consumer<HomeViewModel>(
-        builder: (context, viewModel, child) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => HomeViewModel()),
+        ChangeNotifierProvider(create: (_) => PlaceViewModel()),
+      ],
+      child: Consumer2<HomeViewModel, PlaceViewModel>(
+        builder: (context, homeViewModel, placeViewModel, child) {
           return Scaffold(
             backgroundColor: Colors.white,
             body: Padding(
@@ -67,25 +42,31 @@ class _HomeScreenState extends State<HomeScreen> {
               child: SafeArea(
                 child: Column(
                   children: [
-                    const CustomSearchBar(),
-                    SizedBox(height: 15),
+                    CustomSearchBar(
+                      onSearch: (query) {
+                        placeViewModel.fetchPlaces(query);
+                      },
+                    ),
+                    const SizedBox(height: 15),
                     const CustomSortDropdown(),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     Expanded(
-                      child: ListView.builder(
-                        itemCount: places.length,
-                        itemBuilder: (context, index) {
-                          return CustomPlaceItem(
-                            place: places[index],
-                            onFavoriteToggle: () {
-                              setState(() {
-                                places[index]['isFavorite'] =
-                                    !places[index]['isFavorite'];
-                              });
-                            },
-                          );
-                        },
-                      ),
+                      child:
+                          placeViewModel.isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : placeViewModel.errorMessage.isNotEmpty
+                              ? Center(child: Text(placeViewModel.errorMessage))
+                              : ListView.builder(
+                                itemCount: placeViewModel.places.length,
+                                itemBuilder: (context, index) {
+                                  return CustomPlaceItem(
+                                    place: placeViewModel.places[index],
+                                    onFavoriteToggle: () {
+                                      placeViewModel.toggleFavorite(index);
+                                    },
+                                  );
+                                },
+                              ),
                     ),
                   ],
                 ),
@@ -98,15 +79,50 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-//커스텀 검색바
-class CustomSearchBar extends StatelessWidget {
-  const CustomSearchBar({super.key});
+// 커스텀 검색바
+class CustomSearchBar extends StatefulWidget {
+  final Function(String) onSearch;
+
+  const CustomSearchBar({super.key, required this.onSearch});
+
+  @override
+  State<CustomSearchBar> createState() => _CustomSearchBarState();
+}
+
+class _CustomSearchBarState extends State<CustomSearchBar> {
+  late TextEditingController _controller;
+  late Debouncer _debouncer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+    _debouncer = Debouncer(delay: const Duration(milliseconds: 300));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final viewModel = Provider.of<HomeViewModel>(context, listen: false);
+    _controller.text = viewModel.searchQuery;
+    _controller.selection = TextSelection.fromPosition(
+      TextPosition(offset: viewModel.searchQuery.length),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _debouncer.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<HomeViewModel>(context, listen: false);
 
     return TextField(
+      controller: _controller,
       decoration: InputDecoration(
         hintText: '찾으시려는 장소를 입력해주세요.',
         prefixIcon: const Icon(Icons.search),
@@ -115,24 +131,33 @@ class CustomSearchBar extends StatelessWidget {
           borderSide: BorderSide.none,
         ),
         filled: true,
-        fillColor: Color.fromRGBO(242, 248, 252, 1),
+        fillColor: const Color.fromRGBO(242, 248, 252, 1),
       ),
-      onChanged: viewModel.updateSearchQuery,
-      controller: TextEditingController(text: viewModel.searchQuery)
-        ..selection = TextSelection.fromPosition(
-          TextPosition(offset: viewModel.searchQuery.length),
-        ),
+      onChanged: (value) {
+        // Debouncer를 사용하여 입력 지연 처리
+        _debouncer.run(() {
+          Future.microtask(() {
+            viewModel.updateSearchQuery(value);
+          });
+        });
+      },
+      onSubmitted: (value) {
+        if (value.trim().isNotEmpty) {
+          widget.onSearch(value);
+        }
+      },
     );
   }
 }
 
+// 커스텀 정렬 드롭다운
 class CustomSortDropdown extends StatelessWidget {
   const CustomSortDropdown({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<HomeViewModel>(
-      builder: (context, viewModel, child) {
+    return Consumer2<HomeViewModel, PlaceViewModel>(
+      builder: (context, homeViewModel, placeViewModel, child) {
         return Row(
           children: [
             Container(
@@ -141,14 +166,11 @@ class CustomSortDropdown extends StatelessWidget {
                 vertical: 3.0,
               ),
               decoration: BoxDecoration(
-                border: Border.all(
-                  color: const Color(0xFFE8EEF2), // #E8EEF2 색상
-                  width: 1.0,
-                ),
-                borderRadius: BorderRadius.circular(20.0), // 둥글기 적용
+                border: Border.all(color: const Color(0xFFE8EEF2), width: 1.0),
+                borderRadius: BorderRadius.circular(20.0),
               ),
               child: DropdownButton<String>(
-                value: viewModel.sortOption,
+                value: homeViewModel.sortOption,
                 items:
                     ['가까운 순'].map((String value) {
                       return DropdownMenuItem<String>(
@@ -156,8 +178,10 @@ class CustomSortDropdown extends StatelessWidget {
                         child: Text(value),
                       );
                     }).toList(),
-                onChanged: viewModel.updateSortOption,
-                underline: const SizedBox(), // 기본 밑줄 제거
+                onChanged: (value) {
+                  homeViewModel.updateSortOption(value, placeViewModel);
+                },
+                underline: const SizedBox(),
                 icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
               ),
             ),
