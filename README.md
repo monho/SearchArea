@@ -76,13 +76,13 @@ assets/
 
 문제: 검색바에서 한글 입력 시 자음과 모음이 분리되어 표시됨.
 해결: Debouncer와 Future.microtask를 사용하여 입력 이벤트를 300ms 지연 처리.
-자세히 보기: 블로그 포스트
+
 
 2. KATECH 좌표계와 WGS84 좌표계 불일치
 
 문제: 네이버 API의 mapx, mapy가 KATECH 좌표계로 제공되어 geolocator와의 거리 계산이 잘못됨.
 해결: proj4dart 패키지를 사용하여 KATECH 좌표를 WGS84로 변환 후 거리 계산.
-자세히 보기: 블로그 포스트
+
 
 
 
