@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:searcharea/core/debouncer.dart';
 import 'package:searcharea/view/home/widget/placeListView.dart';
 import 'package:searcharea/viewmodel/place/placeViewModel.dart';
 import 'package:searcharea/viewmodel/terms/home/homeViewModel.dart';
@@ -79,16 +80,49 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 // 커스텀 검색바
-class CustomSearchBar extends StatelessWidget {
+class CustomSearchBar extends StatefulWidget {
   final Function(String) onSearch;
 
   const CustomSearchBar({super.key, required this.onSearch});
+
+  @override
+  State<CustomSearchBar> createState() => _CustomSearchBarState();
+}
+
+class _CustomSearchBarState extends State<CustomSearchBar> {
+  late TextEditingController _controller;
+  late Debouncer _debouncer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+    _debouncer = Debouncer(delay: const Duration(milliseconds: 300));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final viewModel = Provider.of<HomeViewModel>(context, listen: false);
+    _controller.text = viewModel.searchQuery;
+    _controller.selection = TextSelection.fromPosition(
+      TextPosition(offset: viewModel.searchQuery.length),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _debouncer.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<HomeViewModel>(context, listen: false);
 
     return TextField(
+      controller: _controller,
       decoration: InputDecoration(
         hintText: '찾으시려는 장소를 입력해주세요.',
         prefixIcon: const Icon(Icons.search),
@@ -99,16 +133,19 @@ class CustomSearchBar extends StatelessWidget {
         filled: true,
         fillColor: const Color.fromRGBO(242, 248, 252, 1),
       ),
-      onChanged: viewModel.updateSearchQuery,
+      onChanged: (value) {
+        // Debouncer를 사용하여 입력 지연 처리
+        _debouncer.run(() {
+          Future.microtask(() {
+            viewModel.updateSearchQuery(value);
+          });
+        });
+      },
       onSubmitted: (value) {
         if (value.trim().isNotEmpty) {
-          onSearch(value);
+          widget.onSearch(value);
         }
       },
-      controller: TextEditingController(text: viewModel.searchQuery)
-        ..selection = TextSelection.fromPosition(
-          TextPosition(offset: viewModel.searchQuery.length),
-        ),
     );
   }
 }
