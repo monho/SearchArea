@@ -18,8 +18,10 @@ class _HomeScreenState extends State<HomeScreen> {
     // 초기 검색
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final homeViewModel = Provider.of<HomeViewModel>(context, listen: false);
-      Provider.of<PlaceViewModel>(context, listen: false)
-          .fetchPlaces(homeViewModel.searchQuery);
+      Provider.of<PlaceViewModel>(
+        context,
+        listen: false,
+      ).fetchPlaces(homeViewModel.searchQuery);
     });
   }
 
@@ -48,21 +50,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     const CustomSortDropdown(),
                     const SizedBox(height: 15),
                     Expanded(
-                      child: placeViewModel.isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : placeViewModel.errorMessage.isNotEmpty
+                      child:
+                          placeViewModel.isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : placeViewModel.errorMessage.isNotEmpty
                               ? Center(child: Text(placeViewModel.errorMessage))
                               : ListView.builder(
-                                  itemCount: placeViewModel.places.length,
-                                  itemBuilder: (context, index) {
-                                    return CustomPlaceItem(
-                                      place: placeViewModel.places[index],
-                                      onFavoriteToggle: () {
-                                        placeViewModel.toggleFavorite(index);
-                                      },
-                                    );
-                                  },
-                                ),
+                                itemCount: placeViewModel.places.length,
+                                itemBuilder: (context, index) {
+                                  return CustomPlaceItem(
+                                    place: placeViewModel.places[index],
+                                    onFavoriteToggle: () {
+                                      placeViewModel.toggleFavorite(index);
+                                    },
+                                  );
+                                },
+                              ),
                     ),
                   ],
                 ),
@@ -97,7 +100,11 @@ class CustomSearchBar extends StatelessWidget {
         fillColor: const Color.fromRGBO(242, 248, 252, 1),
       ),
       onChanged: viewModel.updateSearchQuery,
-      onSubmitted: onSearch,
+      onSubmitted: (value) {
+        if (value.trim().isNotEmpty) {
+          onSearch(value);
+        }
+      },
       controller: TextEditingController(text: viewModel.searchQuery)
         ..selection = TextSelection.fromPosition(
           TextPosition(offset: viewModel.searchQuery.length),
@@ -122,20 +129,18 @@ class CustomSortDropdown extends StatelessWidget {
                 vertical: 3.0,
               ),
               decoration: BoxDecoration(
-                border: Border.all(
-                  color: const Color(0xFFE8EEF2),
-                  width: 1.0,
-                ),
+                border: Border.all(color: const Color(0xFFE8EEF2), width: 1.0),
                 borderRadius: BorderRadius.circular(20.0),
               ),
               child: DropdownButton<String>(
                 value: homeViewModel.sortOption,
-                items: ['가까운 순'].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
+                items:
+                    ['가까운 순'].map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
                 onChanged: (value) {
                   homeViewModel.updateSortOption(value, placeViewModel);
                 },

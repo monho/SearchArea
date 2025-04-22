@@ -7,6 +7,7 @@ class Place {
   final String roadAddress;
   final int mapx;
   final int mapy;
+  final String link;
   final List<String> tags;
   bool isFavorite;
   double distance;
@@ -18,6 +19,7 @@ class Place {
     required this.roadAddress,
     required this.mapx,
     required this.mapy,
+    required this.link,
     required this.tags,
     this.isFavorite = false,
     this.distance = 0.0,
@@ -32,6 +34,7 @@ class Place {
       roadAddress: json['roadAddress'] ?? '',
       mapx: int.tryParse(json['mapx']?.toString() ?? '0') ?? 0,
       mapy: int.tryParse(json['mapy']?.toString() ?? '0') ?? 0,
+      link: json['link'] ?? 'https://naver.com',
       tags: dummyTags,
       isFavorite: false,
     );
